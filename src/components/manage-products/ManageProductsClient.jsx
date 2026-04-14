@@ -3,6 +3,7 @@
 import { Plus, RefreshCcw } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import CreateProductComponent from "./CreateProductComponent";
 import ModalComponent from "./ModalComponent";
@@ -76,25 +77,33 @@ export default function ManageProductsClient({ initialProducts = [], categories 
   };
 
   const handleSubmitProduct = async (payload) => {
-    try {
-      setIsSubmitting(true);
-      setStatusMessage("");
+    setIsSubmitting(true);
+    setStatusMessage("");
 
-      if (modalMode === "edit" && selectedProduct?.productId) {
-        await updateManageProduct(selectedProduct.productId, payload);
-      } else {
-        await createManageProduct(payload);
-      }
+    const isEditMode = modalMode === "edit" && selectedProduct?.productId;
+    const saveAction = isEditMode
+      ? updateManageProduct(selectedProduct.productId, payload)
+      : createManageProduct(payload);
+    const successMessage = isEditMode
+      ? "Product updated successfully."
+      : "Product created successfully.";
 
-      await refreshProducts();
-      setIsProductModalOpen(false);
-      setSelectedProduct(null);
-      setStatusMessage(modalMode === "edit" ? "" : "Product created successfully.");
-    } catch (error) {
-      setStatusMessage(error instanceof Error ? error.message : "Failed to save product.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    await saveAction
+      .then(async () => {
+        await refreshProducts();
+        setIsProductModalOpen(false);
+        setSelectedProduct(null);
+        setStatusMessage(successMessage);
+        toast.success(successMessage);
+      })
+      .catch((error) => {
+        const errorMessage = error instanceof Error ? error.message : "Failed to save product.";
+        setStatusMessage(errorMessage);
+        toast.error(errorMessage);
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+      });
   };
 
   const handleConfirmDelete = async () => {
@@ -102,19 +111,25 @@ export default function ManageProductsClient({ initialProducts = [], categories 
       return;
     }
 
-    try {
-      setIsDeleting(true);
-      setStatusMessage("");
-      await deleteManageProduct(selectedProduct.productId);
-      await refreshProducts();
-      setIsDeleteModalOpen(false);
-      setSelectedProduct(null);
-      setStatusMessage("Product deleted successfully.");
-    } catch (error) {
-      setStatusMessage(error instanceof Error ? error.message : "Failed to delete product.");
-    } finally {
-      setIsDeleting(false);
-    }
+    setIsDeleting(true);
+    setStatusMessage("");
+
+    await deleteManageProduct(selectedProduct.productId)
+      .then(async () => {
+        await refreshProducts();
+        setIsDeleteModalOpen(false);
+        setSelectedProduct(null);
+        setStatusMessage("Product deleted successfully.");
+        toast.error("Product deleted successfully.");
+      })
+      .catch((error) => {
+        const errorMessage = error instanceof Error ? error.message : "Failed to delete product.";
+        setStatusMessage(errorMessage);
+        toast.warning(errorMessage);
+      })
+      .finally(() => {
+        setIsDeleting(false);
+      });
   };
 
   return (

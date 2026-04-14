@@ -2,6 +2,7 @@
 
 import { Button } from "@heroui/react";
 import React from "react";
+import { toast } from "sonner";
 
 import { useCartStore } from "../store/cartStore";
 
@@ -18,6 +19,9 @@ export default function ButtonAddComponent({ product, selectedColor, selectedSiz
       selectedSize,
       quantity,
     });
+
+    const productName = product?.name ?? product?.productName ?? "Product";
+    toast.success(`${productName} added to cart`);
   };
 
   return (

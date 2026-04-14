@@ -6,6 +6,7 @@ import { Button } from "@heroui/react";
 import { useForm } from "react-hook-form";
 import { handleLoginAction } from "../../../action/auth.action";
 import { Eye, EyeOff } from 'lucide-react';
+import { toast } from "sonner";
 
 
 export default function LoginFormComponent() {
@@ -35,8 +36,11 @@ export default function LoginFormComponent() {
       return;
     }
 
-    // Force a full navigation so the new auth cookie is present on first SSR request.
-    window.location.assign(result.url || callbackUrl);
+    toast.success("Login successful");
+
+    setTimeout(() => {
+      window.location.assign(result.url || callbackUrl);
+    }, 600);
   };
 
   return (
@@ -112,3 +116,4 @@ export default function LoginFormComponent() {
     </form>
   );
 }
+

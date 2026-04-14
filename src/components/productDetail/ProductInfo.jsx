@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { toast } from "sonner";
 
 import { getProductRating, updateProductRating } from "../../service/shop.service";
 import { useCartStore } from "../../store/cartStore";
@@ -167,6 +168,7 @@ export default function ProductInfo({ product, onRatingChange }) {
       quantity,
     });
 
+    toast.success(`${productName} added to cart`);
     setShowAddedBanner(true);
   };
 
